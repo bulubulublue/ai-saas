@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardFooter } from "@/components/ui/card";
 import Image from "next/image";
 
-const ConversationPage = () => {
+const ImagePage = () => {
   const router = useRouter();
 
   // 图片url列表
@@ -162,4 +162,4 @@ const ConversationPage = () => {
   );
 };
 
-export default ConversationPage;
+export default ImagePage;
