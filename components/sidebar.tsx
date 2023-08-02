@@ -60,7 +60,13 @@ const routes = [
 ];
 
 const montserrat = Montserrat({ weight: "600", subsets: ["latin"] });
-const Sidebar = () => {
+const Sidebar = ({
+  apiLimitCount = 0,
+  isPro = false,
+}: {
+  apiLimitCount: number;
+  isPro: boolean;
+}) => {
   // 用于在当前页面时，对应的menu有高亮显示
   const pathname = usePathname();
   return (

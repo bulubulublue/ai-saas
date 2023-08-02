@@ -1,10 +1,11 @@
+import { checkApiLimit } from "@/lib/api-limit";
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import { Configuration, OpenAIApi } from "openai";
 import { useId } from "react";
 
 const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const openai = new OpenAIApi(configuration);
@@ -27,12 +28,24 @@ export async function POST(req: Request) {
       return new NextResponse("Prompt is required", { status: 400 });
     }
 
+    // 判断是否还可以免费使用
+    const freeTrial = await checkApiLimit();
+    // const isPro = await checkSubscription();
+
+    // if (!freeTrial && !isPro) {
+    //   return new NextResponse("Free trial has expired. Please upgrade to pro.", { status: 403 });
+    // }
+
     // 生成图片的api参数
     const response = await openai.createImage({
       prompt,
       n: parseInt(amount, 10),
-      size: resolution
+      size: resolution,
     });
+
+    // if (!isPro) {
+    //   await incrementApiLimit();
+    // }
 
     // 获取图片数据
     return NextResponse.json(response.data.data);
