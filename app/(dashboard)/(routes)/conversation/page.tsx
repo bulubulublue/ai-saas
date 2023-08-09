@@ -1,64 +1,80 @@
-"use client";
-import * as z from "zod";
-import { Heading } from "@/components/heading";
-import { MessageSquare } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+'use client'
+import * as z from 'zod'
+import { Heading } from '@/components/heading'
+import { MessageSquare } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { formSchema } from "./constants";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
-import { useState } from "react";
-import { Empty } from "@/components/Empty";
-import { Loader } from "@/components/Loader";
-import { cn } from "@/lib/utils";
-import { UserAvatar } from "@/components/userAvatar";
-import { BotAvatar } from "@/components/botAvatar";
+import { formSchema } from './constants'
+import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { ChatCompletionRequestMessage } from 'openai'
+import { useState } from 'react'
+import { Empty } from '@/components/Empty'
+import { Loader } from '@/components/Loader'
+import { cn } from '@/lib/utils'
+import { UserAvatar } from '@/components/userAvatar'
+import { BotAvatar } from '@/components/botAvatar'
+import { useProModal } from '@/hooks/use-pro-modal'
 
 const ConversationPage = () => {
-  const router = useRouter();
-  const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([]);
+  const router = useRouter()
+  const proModal = useProModal()
+  const [messages, setMessages] = useState<ChatCompletionRequestMessage[]>([])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: ""
-    }
-  });
+      prompt: '',
+    },
+  })
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const userMessage: ChatCompletionRequestMessage = {
-        role: "user",
-        content: values.prompt
-      };
-      const newMessages = [...messages, userMessage];
+        role: 'user',
+        content: values.prompt,
+      }
+      const newMessages = [...messages, userMessage]
 
-      const response = await axios.post("/api/conversation", { messages: newMessages });
+      const response = await axios.post('/api/conversation', {
+        messages: newMessages,
+      })
 
-      setMessages((cur) => [...cur, userMessage, response.data]);
+      setMessages((cur) => [...cur, userMessage, response.data])
 
-      form.reset();
+      form.reset()
     } catch (error: any) {
-      console.log(error);
+      // 如果是403，就打开pro modal
+      if (error?.response?.status === 403) {
+        proModal.onOpen()
+      }
     } finally {
-      router.refresh(); //刷新页面？
+      router.refresh() //刷新所有的server component,会重新获取最新数据
     }
-  };
+  }
 
   return (
     <div>
-      <Heading title="Conversation" description="Our most advanced conversation model." icon={MessageSquare} iconColor="text-violet-500" bgColor="bg-violet-500/10" />
+      <Heading
+        title="Conversation"
+        description="Our most advanced conversation model."
+        icon={MessageSquare}
+        iconColor="text-violet-500"
+        bgColor="bg-violet-500/10"
+      />
       <div className="px-4 lg:px-8">
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
+            >
               {/* field中有onchange等事件 */}
               <FormField
                 name="prompt"
@@ -75,7 +91,10 @@ const ConversationPage = () => {
                   </FormItem>
                 )}
               />
-              <Button className="col-span-12 lg:col-span-2 w-full" disabled={isLoading}>
+              <Button
+                className="col-span-12 lg:col-span-2 w-full"
+                disabled={isLoading}
+              >
                 Generate
               </Button>
             </form>
@@ -96,8 +115,16 @@ const ConversationPage = () => {
           )}
           <div className="flex flex-col-reverse gap-y-4">
             {messages.map((message) => (
-              <div key={message.content} className={cn("p-8 w-full flex items-start gap-x-8 rounded-lg", message.role === "user" ? "bg-white border border-black/10" : "bg-muted")}>
-                {message.role === "user" ? <UserAvatar /> : <BotAvatar />}
+              <div
+                key={message.content}
+                className={cn(
+                  'p-8 w-full flex items-start gap-x-8 rounded-lg',
+                  message.role === 'user'
+                    ? 'bg-white border border-black/10'
+                    : 'bg-muted'
+                )}
+              >
+                {message.role === 'user' ? <UserAvatar /> : <BotAvatar />}
                 <p className="text-sm">{message.content}</p>
               </div>
             ))}
@@ -105,7 +132,7 @@ const ConversationPage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ConversationPage;
+export default ConversationPage

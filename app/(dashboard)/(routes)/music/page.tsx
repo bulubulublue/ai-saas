@@ -1,72 +1,96 @@
-"use client";
-import * as z from "zod";
-import { Heading } from "@/components/heading";
-import { MessageSquare } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+'use client'
+import * as z from 'zod'
+import { Heading } from '@/components/heading'
+import { MessageSquare } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { formSchema } from "./constants";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { ChatCompletionRequestMessage } from "openai";
-import { useState } from "react";
-import { Empty } from "@/components/Empty";
-import { Loader } from "@/components/Loader";
-import { cn } from "@/lib/utils";
-import { UserAvatar } from "@/components/userAvatar";
-import { BotAvatar } from "@/components/botAvatar";
+import { formSchema } from './constants'
+import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { ChatCompletionRequestMessage } from 'openai'
+import { useState } from 'react'
+import { Empty } from '@/components/Empty'
+import { Loader } from '@/components/Loader'
+import { cn } from '@/lib/utils'
+import { UserAvatar } from '@/components/userAvatar'
+import { BotAvatar } from '@/components/botAvatar'
+import { useProModal } from '@/hooks/use-pro-modal'
+import { toast } from 'react-hot-toast'
 
 const MusicPage = () => {
-  const router = useRouter();
-  const [music, setMusic] = useState<string>();
+  const router = useRouter()
+  const [music, setMusic] = useState<string>()
+  const proModal = useProModal()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      prompt: ""
-    }
-  });
+      prompt: '',
+    },
+  })
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setMusic(undefined);
+      setMusic(undefined)
 
-      const response = await axios.post("/api/music", values);
+      const response = await axios.post('/api/music', values)
 
-      setMusic(response.data.audio);
+      setMusic(response.data.audio)
 
-      form.reset();
+      form.reset()
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen()
+      } else {
+        toast.error('Something went wrong.')
+      }
     } finally {
-      router.refresh(); //刷新页面？
+      router.refresh() //刷新页面？
     }
-  };
+  }
 
   return (
     <div>
-      <Heading title="Conversation" description="Our most advanced conversation model." icon={MessageSquare} iconColor="text-violet-500" bgColor="bg-violet-500/10" />
+      <Heading
+        title="Conversation"
+        description="Our most advanced conversation model."
+        icon={MessageSquare}
+        iconColor="text-violet-500"
+        bgColor="bg-violet-500/10"
+      />
       <div className="px-4 lg:px-8">
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
+            >
               {/* field中有onchange等事件 */}
               <FormField
                 name="prompt"
                 render={({ field }) => (
                   <FormItem className="col-span-12 lg:col-span-10">
                     <FormControl className="m-0 p-0">
-                      <Input className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent" disabled={isLoading} placeholder="Generate a piano music" {...field} />
+                      <Input
+                        className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
+                        disabled={isLoading}
+                        placeholder="Generate a piano music"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
               />
-              <Button className="col-span-12 lg:col-span-2 w-full" disabled={isLoading}>
+              <Button
+                className="col-span-12 lg:col-span-2 w-full"
+                disabled={isLoading}
+              >
                 Generate
               </Button>
             </form>
@@ -93,7 +117,7 @@ const MusicPage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MusicPage;
+export default MusicPage

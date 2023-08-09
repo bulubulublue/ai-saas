@@ -1,66 +1,88 @@
-"use client";
-import * as z from "zod";
-import { Heading } from "@/components/heading";
-import { Download, MessageSquare } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+'use client'
+import * as z from 'zod'
+import { Heading } from '@/components/heading'
+import { Download, MessageSquare } from 'lucide-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { amountOptions, formSchema, resolutionOptions } from "./constants";
-import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Empty } from "@/components/Empty";
-import { Loader } from "@/components/Loader";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardFooter } from "@/components/ui/card";
-import Image from "next/image";
+import { amountOptions, formSchema, resolutionOptions } from './constants'
+import { Form, FormField, FormItem, FormControl } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { Empty } from '@/components/Empty'
+import { Loader } from '@/components/Loader'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Card, CardFooter } from '@/components/ui/card'
+import Image from 'next/image'
+import { useProModal } from '@/hooks/use-pro-modal'
+import { toast } from 'react-hot-toast'
 
 const ImagePage = () => {
-  const router = useRouter();
+  const router = useRouter()
+  const proModal = useProModal()
 
   // 图片url列表
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>([])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     // 表单默认值
     defaultValues: {
-      prompt: "",
-      amount: "1",
-      resolution: "512x512"
-    }
-  });
+      prompt: '',
+      amount: '1',
+      resolution: '512x512',
+    },
+  })
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // console.log(values); //{prompt: 'aa', amount: '4', resolution: '1024x1024'}
     // //values: 表单数据
     try {
-      setImages([]);
-      const response = await axios.post("/api/image", values);
+      setImages([])
+      const response = await axios.post('/api/image', values)
       // openai会返回生成图片对应的url
-      const urls = response.data.map((image: { url: string }) => image.url);
+      const urls = response.data.map((image: { url: string }) => image.url)
 
-      setImages(urls);
-      form.reset();
+      setImages(urls)
+      form.reset()
     } catch (error: any) {
-      console.log(error);
+      if (error?.response?.status === 403) {
+        proModal.onOpen()
+      } else {
+        toast.error('Something went wrong.')
+      }
     } finally {
-      router.refresh(); //刷新页面？
+      router.refresh() //刷新页面？
     }
-  };
+  }
 
   return (
     <div>
-      <Heading title="Conversation" description="Our most advanced conversation model." icon={MessageSquare} iconColor="text-violet-500" bgColor="bg-violet-500/10" />
+      <Heading
+        title="Conversation"
+        description="Our most advanced conversation model."
+        icon={MessageSquare}
+        iconColor="text-violet-500"
+        bgColor="bg-violet-500/10"
+      />
       <div className="px-4 lg:px-8">
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="rounded-lg border w-full p-4 px-3 md:px-6 focus-within:shadow-sm grid grid-cols-12 gap-2"
+            >
               {/* field中有onchange等事件 */}
               {/* 提示词 */}
               <FormField
@@ -68,7 +90,12 @@ const ImagePage = () => {
                 render={({ field }) => (
                   <FormItem className="col-span-12 lg:col-span-6">
                     <FormControl className="m-0 p-0">
-                      <Input className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent" disabled={isLoading} placeholder="A picture of dogs" {...field} />
+                      <Input
+                        className="border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
+                        disabled={isLoading}
+                        placeholder="A picture of dogs"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
@@ -79,7 +106,12 @@ const ImagePage = () => {
                 control={form.control}
                 render={({ field }) => (
                   <FormItem className="col-span-12 lg:col-span-2">
-                    <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue defaultValue={field.value} />
@@ -103,7 +135,12 @@ const ImagePage = () => {
                 name="resolution"
                 render={({ field }) => (
                   <FormItem className="col-span-12 lg:col-span-2">
-                    <Select disabled={isLoading} onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue defaultValue={field.value} />
@@ -120,7 +157,10 @@ const ImagePage = () => {
                   </FormItem>
                 )}
               />
-              <Button className="col-span-12 lg:col-span-2 w-full" disabled={isLoading}>
+              <Button
+                className="col-span-12 lg:col-span-2 w-full"
+                disabled={isLoading}
+              >
                 Generate
               </Button>
             </form>
@@ -148,7 +188,11 @@ const ImagePage = () => {
                   <Image fill alt="Generated" src={src} />
                 </div>
                 <CardFooter className="p-2">
-                  <Button onClick={() => window.open(src)} variant="secondary" className="w-full">
+                  <Button
+                    onClick={() => window.open(src)}
+                    variant="secondary"
+                    className="w-full"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
@@ -159,7 +203,7 @@ const ImagePage = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ImagePage;
+export default ImagePage
