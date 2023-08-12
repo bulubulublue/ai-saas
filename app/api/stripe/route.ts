@@ -5,7 +5,7 @@ import prismadb from '@/lib/prismadb'
 import { stripe } from '@/lib/stripe'
 import { absoluteUrl } from '@/lib/utils'
 
-const settingsUrl = absoluteUrl('/settings')
+const settingsUrl = absoluteUrl('/settings') // 支付成功后的跳转页面
 
 export async function GET() {
   try {

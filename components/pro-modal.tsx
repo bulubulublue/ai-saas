@@ -24,10 +24,11 @@ export const ProModal = () => {
   const proModal = useProModal()
   const [loading, setLoading] = useState(false)
 
+  // 当升级时，打开stripe管理页
   const onSubscribe = async () => {
     try {
       setLoading(true)
-      const response = await axios.get('/api/stripe')
+      const response = await axios.get('/api/stripe') //response是对应的stripe的url
 
       window.location.href = response.data.url
     } catch (error) {

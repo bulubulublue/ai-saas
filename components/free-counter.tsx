@@ -10,10 +10,10 @@ import { Progress } from '@/components/ui/progress'
 import { useProModal } from '@/hooks/use-pro-modal'
 
 export const FreeCounter = ({
-  // isPro = false,
+  isPro = false,
   apiLimitCount = 0,
 }: {
-  // isPro: boolean,
+  isPro: boolean
   apiLimitCount: number
 }) => {
   const [mounted, setMounted] = useState(false)
@@ -27,9 +27,9 @@ export const FreeCounter = ({
     return null
   }
 
-  // if (isPro) {
-  //   return null;
-  // }
+  if (isPro) {
+    return null
+  }
 
   return (
     <div className="px-3 mb-4">
