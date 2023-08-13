@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils'
 import { UserAvatar } from '@/components/userAvatar'
 import { BotAvatar } from '@/components/botAvatar'
 import { useProModal } from '@/hooks/use-pro-modal'
+import toast from 'react-hot-toast'
 
 const ConversationPage = () => {
   const router = useRouter()
@@ -53,6 +54,8 @@ const ConversationPage = () => {
       // 如果是403，就打开pro modal
       if (error?.response?.status === 403) {
         proModal.onOpen()
+      } else {
+        toast.error('something went wrong')
       }
     } finally {
       router.refresh() //刷新所有的server component,会重新获取最新数据
